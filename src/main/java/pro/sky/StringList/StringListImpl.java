@@ -1,139 +1,153 @@
 package pro.sky.StringList;
 
+import pro.sky.StringList.exception.InvalidIndexException;
+import pro.sky.StringList.exception.NullItemException;
+import pro.sky.StringList.exception.StorageIsFullException;
+
 import java.util.Arrays;
-import java.util.Objects;
 
-public class StringListImpl implements StringList{
+public class StringListImpl implements StringList {
 
-    final String[] list;
-    int size;
-    private int capacity;
-
-
-    public StringListImpl(int size) {
-        this.size = size;
-        this.list = new String[size];
-        this.capacity = 0;
-    }
+    private final String[] storage;
+    private int size;
 
     public StringListImpl() {
-        this.list = new String[100];
-        size = 100;
-        capacity = 0;
+        storage = new String[10];
     }
 
+    public StringListImpl(int size) {
+        this.storage = new String[size];
+    }
+
+    private void validateItem(String item) {
+        if (item == null) {
+            throw new NullItemException();
+        }
+    }
+
+    private void validateSize() {
+        if (size == storage.length) {
+            throw new StorageIsFullException();
+        }
+    }
+
+    private void validateIndex(int index) {
+        if (index < 0 || index > size) {
+            throw new InvalidIndexException();
+        }
+    }
 
     @Override
     public String toString() {
-        return "list=" + Arrays.toString(list);
+        return "list=" + Arrays.toString(storage);
     }
+
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        StringListImpl that = (StringListImpl) o;
-        return size == that.size && capacity == that.capacity && Arrays.equals(list, that.list);
+    public String add(String item) {
+        validateSize();
+        validateItem(item);
+        storage[size++] = item;
+        return item;
     }
+
 
     @Override
-    public int hashCode() {
-        int result = Objects.hash(size, capacity);
-        result = 31 * result + Arrays.hashCode(list);
-        return result;
-    }
-
-    public void element(String str) {
-        if (str == null) {
-            throw new NullPointerException("The element is null");
-
+    public String add(int index, String item) {
+        validateSize();
+        validateItem(item);
+        validateIndex(index);
+        if (index == size) {
+            storage[size++] = item;
+            return item;
         }
+        System.arraycopy(storage, index, storage, index + 1, size - index);
+        storage[index] = item;
+        size++;
+        return item;
+    }
 
 
-        public void ifBadIndex(int index) {
-            if (index < 0 || index > (list.length - 1)) {
-                throw new ArrayIndexOutOfBoundsException("The index exceeds list size limits");
+    @Override
+    public String set(int index, String item) {
+        validateIndex(index);
+        validateItem(item);
+        storage[index] = item;
+        return item;
+    }
+
+    @Override
+    public String remove(String item) {
+        validateItem(item);
+        int index = indexOf(item);
+        return remove(index);
+    }
+
+    @Override
+    public String remove(int index) {
+        validateIndex(index);
+        String item = storage[index];
+        if (index != size) {
+            System.arraycopy(storage, index + 1, storage, index, size - (index + 1));
+        }
+        size--;
+        return item;
+    }
+
+    @Override
+    public boolean contains(String item) {
+        return indexOf(item) != -1;
+    }
+
+    @Override
+    public int indexOf(String item) {
+        for (int i = 0; i < size; i++) {
+            if (storage[i].equals(item)) {
+                return i;
             }
         }
-
+        return -1;
+    }
 
     @Override
-    public String add(String item){
-        element(item);
-        if (capacity == size){
-            throw new ArrayIsFullException("лист заполнен");
+    public int lastIndexOf(String item) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (storage[i].equals(item)) {
+                return -1;
+            }
         }
-        list[capacity] = item;
-        capacity++;
-        return item;
-
-        }
-
-
-
+        return -1;
     }
 
     @Override
-    public String set(int index, String item){
-        return null;
+    public String get(int index) {
+        validateIndex(index);
+        return storage[index];
     }
 
     @Override
-    public String remove(String item){
-        return null;
-    }
-    @Override
-    public String remove(int index){
-        return null;
-    }
-    @Override
-    public boolean contains(String item){
-        return false;
-    }
-    @Override
-    public int indexOf(String item){
-        return 0;
+    public boolean equals(StringList otherList) {
+        return Arrays.equals(this.toArray(), otherList.toArray());
     }
 
     @Override
-    public int lastIndexOf(String item){
-        int i = capacity - 1;
-        for (i = capacity - 1; i > -1; i--) {
-            if (list[i].equals(item)) break;
-        }
-        return i;
-
-
+    public int size() {
+        return size;
     }
 
     @Override
-    public String get(int index){
-        return null;
+    public boolean isEmpty() {
+        return size == 0;
     }
 
     @Override
-    public boolean equals(StringList otherList){
-        return false;
+    public void clear() {
+        size = 0;
     }
 
     @Override
-    public int size(){
-        return 0;
-    }
-
-    @Override
-    public boolean isEmpty(){
-        return false;
-    }
-
-    @Override
-    public void clear(){
-
-    }
-
-    @Override
-    public String[] toArray(){
-        return null;
+    public String[] toArray() {
+        return Arrays.copyOf(storage, size);
     }
 
 

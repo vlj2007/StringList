@@ -2,6 +2,7 @@ package pro.sky.StringList;
 
 public interface StringList {
     String add(String item);
+    String add (int index, String item);
     String set(int index, String item);
     String remove(String item);
     String remove(int index);
